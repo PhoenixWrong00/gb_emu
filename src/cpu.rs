@@ -1,0 +1,33 @@
+use crate::inst::{Instruction, ArithmeticTarget};
+use crate::registers::{Registers};
+
+
+struct CPU {
+    registers: Registers,
+    pc: u16,
+    bus: MemoryBus,
+}
+
+impl CPU {
+    fn execute(&mut self, instruction: Instruction) {
+        match instruction {
+            Instruction::ADD(target) => {
+                match target {
+                    ArithmeticTarget::C => {
+                        let value = self.registers.c;
+                        let new_value = self.add(value);
+                        self.registers.a = new_value;
+                    }
+                }
+            }
+        }
+    }
+    fn add(&mut self, value: u8) -> u8 {
+        let (new_value, did_overflow) = self.registers.a.overflowing_add(value);
+        self.registers.f.zero = new_value == 0;
+        self.registers.f.sub = false;
+        self.registers.f.carry = did_overflow;
+        self.registers.f.h_carry = (self.registers.a & 0xF) + (value & 0xF) > 0xF;
+        new_value
+    }
+}
