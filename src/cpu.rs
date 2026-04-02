@@ -2,14 +2,14 @@ use crate::inst::{Instruction, ArithmeticTarget};
 use crate::registers::{Registers};
 
 
-struct CPU {
+pub struct CPU {
     registers: Registers,
     pc: u16,
     bus: MemoryBus,
 }
 
 impl CPU {
-    fn execute(&mut self, instruction: Instruction) {
+    pub fn execute(&mut self, instruction: Instruction) {
         match instruction {
             Instruction::ADD(target) => {
                 match target {
