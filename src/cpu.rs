@@ -200,6 +200,483 @@ impl CPU {
 
                 }
             }
+            Instruction::AND(target) => {
+                match target {
+                    ArithmeticTarget::A => {
+                        let value: u8 = self.registers.a;
+                        let new_value: u8 = self.and(value);
+                        self.registers.a = new_value;
+                    }
+                    ArithmeticTarget::B => {
+                        let value: u8 = self.registers.b;
+                        let new_value: u8 = self.and(value);
+                        self.registers.a = new_value;
+                    }
+                    ArithmeticTarget::C => {
+                        let value: u8 = self.registers.c;
+                        let new_value: u8 = self.and(value);
+                        self.registers.a = new_value;
+                    }
+                    ArithmeticTarget::D => {
+                        let value: u8 = self.registers.d;
+                        let new_value: u8 = self.and(value);
+                        self.registers.a = new_value;
+                    }
+                    ArithmeticTarget::E => {
+                        let value: u8 = self.registers.e;
+                        let new_value: u8 = self.and(value);
+                        self.registers.a = new_value;
+                    }
+                    ArithmeticTarget::H => {
+                        let value: u8 = self.registers.h;
+                        let new_value: u8 = self.and(value);
+                        self.registers.a = new_value;
+                    }
+                    ArithmeticTarget::L => {
+                        let value: u8 = self.registers.l;
+                        let new_value: u8 = self.and(value);
+                        self.registers.a = new_value;
+                    }
+                    _ => panic!("Invalid target"),
+                }
+            }
+            Instruction::OR(target) => {
+                match target {
+                    ArithmeticTarget::A => {
+                        self.registers.a = self.or(self.registers.a);
+                    }
+                    ArithmeticTarget::B => {
+                        self.registers.a = self.or(self.registers.b);
+                    }
+                    ArithmeticTarget::C => {
+                        self.registers.a = self.or(self.registers.c);
+                    }
+                    ArithmeticTarget::D => {
+                        self.registers.a = self.or(self.registers.d);
+                    }
+                    ArithmeticTarget::E => {
+                        self.registers.a = self.or(self.registers.e);
+                    }
+                    ArithmeticTarget::H => {
+                        self.registers.a = self.or(self.registers.h);
+                    }
+                    ArithmeticTarget::L => {
+                        self.registers.a = self.or(self.registers.l);
+                    }
+                    _ => panic!("Invalid target"),
+                }
+            }
+            Instruction::XOR(target) => {
+                match target {
+                    ArithmeticTarget::A => {
+                        self.registers.a = self.xor(self.registers.a);
+                    }
+                    ArithmeticTarget::B => {
+                        self.registers.a = self.xor(self.registers.b);
+                    }
+                    ArithmeticTarget::C => {
+                        self.registers.a = self.xor(self.registers.c);
+                    }
+                    ArithmeticTarget::D => {
+                        self.registers.a = self.xor(self.registers.d);
+                    }
+                    ArithmeticTarget::E => {
+                        self.registers.a = self.xor(self.registers.e);
+                    }
+                    ArithmeticTarget::H => {
+                        self.registers.a = self.xor(self.registers.h);
+                    }
+                    ArithmeticTarget::L => {
+                        self.registers.a = self.xor(self.registers.l);
+                    }
+                    _ => panic!("Invalid target"),
+                }
+            }
+            Instruction::CP(target) => {
+                match target {
+                    ArithmeticTarget::A => {
+                        self.cp(self.registers.a);
+                    }
+                    ArithmeticTarget::B => {
+                        self.cp(self.registers.b);
+                    }
+                    ArithmeticTarget::C => {
+                        self.cp(self.registers.c);
+                    }
+                    ArithmeticTarget::D => {
+                        self.cp(self.registers.d);
+                    }
+                    ArithmeticTarget::E => {
+                        self.cp(self.registers.e);
+                    }
+                    ArithmeticTarget::H => {
+                        self.cp(self.registers.h);
+                    }
+                    ArithmeticTarget::L => {
+                        self.cp(self.registers.l);
+                    }
+                    _ => panic!("Invalid target"),
+                }
+            }
+            Instruction::INC(target) => {
+                match target {
+                    ArithmeticTarget::A => {
+                        self.registers.a = self.inc(self.registers.a);
+                    }
+                    ArithmeticTarget::B => {
+                        self.registers.b = self.inc(self.registers.b);
+                    }
+                    ArithmeticTarget::C => {
+                        self.registers.c = self.inc(self.registers.c);
+                    }
+                    ArithmeticTarget::D => {
+                        self.registers.d = self.inc(self.registers.d);
+                    }
+                    ArithmeticTarget::E => {
+                        self.registers.e = self.inc(self.registers.e);
+                    }
+                    ArithmeticTarget::H => {
+                        self.registers.h = self.inc(self.registers.h);
+                    }
+                    ArithmeticTarget::L => {
+                        self.registers.l = self.inc(self.registers.l);
+                    }
+                    _ => panic!("Invalid target"),
+                }
+            }
+            Instruction::DEC(target) => {
+                match target {
+                    ArithmeticTarget::A => {
+                        self.registers.a = self.dec(self.registers.a);
+                    }
+                    ArithmeticTarget::B => {
+                        self.registers.b = self.dec(self.registers.b);
+                    }
+                    ArithmeticTarget::C => {
+                        self.registers.c = self.dec(self.registers.c);
+                    }
+                    ArithmeticTarget::D => {
+                        self.registers.d = self.dec(self.registers.d);
+                    }
+                    ArithmeticTarget::E => {
+                        self.registers.e = self.dec(self.registers.e);
+                    }
+                    ArithmeticTarget::H => {
+                        self.registers.h = self.dec(self.registers.h);
+                    }
+                    ArithmeticTarget::L => {
+                        self.registers.l = self.dec(self.registers.l);
+                    }
+                    _ => panic!("Invalid target"),
+                }
+            }
+            Instruction::CCF => {
+                self.ccf();
+            }
+            Instruction::SCF => {
+                self.scf();
+            }
+            Instruction::RRA => {
+                self.rra();
+            }
+            Instruction::RLA => {
+                self.rla();
+            }
+            Instruction::RRCA => {
+                self.rlca();
+            }
+            Instruction::RLCA => {
+                self.rlca();
+            }
+            Instruction::CPL => {
+                self.cpl();
+            }
+            Instruction::BIT(bit, target) => {
+                match target {
+                    ArithmeticTarget::A => {
+                        self.bit(bit, self.registers.a);
+                    }
+                    ArithmeticTarget::B => {
+                        self.bit(bit, self.registers.b);
+                    }
+                    ArithmeticTarget::C => {
+                        self.bit(bit, self.registers.c);
+                    }
+                    ArithmeticTarget::D => {
+                        self.bit(bit, self.registers.d);
+                    }
+                    ArithmeticTarget::E => {
+                        self.bit(bit, self.registers.e);
+                    }
+                    ArithmeticTarget::H => {
+                        self.bit(bit, self.registers.h);
+                    }
+                    ArithmeticTarget::L => {
+                        self.bit(bit, self.registers.l);
+                    }
+                    _ => panic!("Invalid target"),
+                }
+            }
+            Instruction::RESET(bit, target) => {
+                match target {
+                    ArithmeticTarget::A => {
+                        self.registers.a = self.reset(bit, self.registers.a);
+                    }
+                    ArithmeticTarget::B => {
+                        self.registers.b = self.reset(bit, self.registers.b);
+                    }
+                    ArithmeticTarget::C => {
+                        self.registers.c = self.reset(bit, self.registers.c);
+                    }
+                    ArithmeticTarget::D => {
+                        self.registers.d = self.reset(bit, self.registers.d);
+                    }
+                    ArithmeticTarget::E => {
+                        self.registers.e = self.reset(bit, self.registers.e);
+                    }
+                    ArithmeticTarget::H => {
+                        self.registers.h = self.reset(bit, self.registers.h);
+                    }
+                    ArithmeticTarget::L => {
+                        self.registers.l = self.reset(bit, self.registers.l);
+                    }
+                    _ => panic!("Invalid target"),
+                }
+            }
+            Instruction::SET(bit, target) => {
+                match target {
+                    ArithmeticTarget::A => {
+                        self.registers.a = self.set(bit, self.registers.a);
+                    }
+                    ArithmeticTarget::B => {
+                        self.registers.b = self.set(bit, self.registers.b);
+                    }
+                    ArithmeticTarget::C => {
+                        self.registers.c = self.set(bit, self.registers.c);
+                    }
+                    ArithmeticTarget::D => {
+                        self.registers.d = self.set(bit, self.registers.d);
+                    }
+                    ArithmeticTarget::E => {
+                        self.registers.e = self.set(bit, self.registers.e);
+                    }
+                    ArithmeticTarget::H => {
+                        self.registers.h = self.set(bit, self.registers.h);
+                    }
+                    ArithmeticTarget::L => {
+                        self.registers.l = self.set(bit, self.registers.l);
+                    }
+                    _ => panic!("Invalid target"),
+                }
+            }
+            Instruction::SRL(target) => {
+                match target {
+                    ArithmeticTarget::A => {
+                        self.registers.a = self.srl(self.registers.a);
+                    }
+                    ArithmeticTarget::B => {
+                        self.registers.b = self.srl(self.registers.b);
+                    }
+                    ArithmeticTarget::C => {
+                        self.registers.c = self.srl(self.registers.c);
+                    }
+                    ArithmeticTarget::D => {
+                        self.registers.d = self.srl(self.registers.d);
+                    }
+                    ArithmeticTarget::E => {
+                        self.registers.e = self.srl(self.registers.e);
+                    }
+                    ArithmeticTarget::H => {
+                        self.registers.h = self.srl(self.registers.h);
+                    }
+                    ArithmeticTarget::L => {
+                        self.registers.l = self.srl(self.registers.l);
+                    }
+                    _ => panic!("Invalid target"),
+                }
+            }
+            Instruction::RR(target) => {
+                match target {
+                    ArithmeticTarget::A => {
+                        self.registers.a = self.rr(self.registers.a);
+                    }
+                    ArithmeticTarget::B => {
+                        self.registers.b = self.rr(self.registers.b);
+                    }
+                    ArithmeticTarget::C => {
+                        self.registers.c = self.rr(self.registers.c);
+                    }
+                    ArithmeticTarget::D => {
+                        self.registers.d = self.rr(self.registers.d);
+                    }
+                    ArithmeticTarget::E => {
+                        self.registers.e = self.rr(self.registers.e);
+                    }
+                    ArithmeticTarget::H => {
+                        self.registers.h = self.rr(self.registers.h);
+                    }
+                    ArithmeticTarget::L => {
+                        self.registers.l = self.rr(self.registers.l);
+                    }
+                    _ => panic!("Invalid target"),
+                }
+            }
+            Instruction::RL(target) => {
+                match target {
+                    ArithmeticTarget::A => {
+                        self.registers.a = self.rl(self.registers.a);
+                    }
+                    ArithmeticTarget::B => {
+                        self.registers.b = self.rl(self.registers.b);
+                    }
+                    ArithmeticTarget::C => {
+                        self.registers.c = self.rl(self.registers.c);
+                    }
+                    ArithmeticTarget::D => {
+                        self.registers.d = self.rl(self.registers.d);
+                    }
+                    ArithmeticTarget::E => {
+                        self.registers.e = self.rl(self.registers.e);
+                    }
+                    ArithmeticTarget::H => {
+                        self.registers.h = self.rl(self.registers.h);
+                    }
+                    ArithmeticTarget::L => {
+                        self.registers.l = self.rl(self.registers.l);
+                    }
+                    _ => panic!("Invalid target"),
+                }
+            }
+            Instruction::RRC(target) => {
+                match target {
+                    ArithmeticTarget::A => {
+                        self.registers.a = self.rrc(self.registers.a);
+                    }
+                    ArithmeticTarget::B => {
+                        self.registers.b = self.rrc(self.registers.b);
+                    }
+                    ArithmeticTarget::C => {
+                        self.registers.c = self.rrc(self.registers.c);
+                    }
+                    ArithmeticTarget::D => {
+                        self.registers.d = self.rrc(self.registers.d);
+                    }
+                    ArithmeticTarget::E => {
+                        self.registers.e = self.rrc(self.registers.e);
+                    }
+                    ArithmeticTarget::H => {
+                        self.registers.h = self.rrc(self.registers.h);
+                    }
+                    ArithmeticTarget::L => {
+                        self.registers.l = self.rrc(self.registers.l);
+                    }
+                    _ => panic!("Invalid target"),
+                }
+            }
+            Instruction::RLC(target) => {
+                match target {
+                    ArithmeticTarget::A => {
+                        self.registers.a = self.rlc(self.registers.a);
+                    }
+                    ArithmeticTarget::B => {
+                        self.registers.b = self.rlc(self.registers.b);
+                    }
+                    ArithmeticTarget::C => {
+                        self.registers.c = self.rlc(self.registers.c);
+                    }
+                    ArithmeticTarget::D => {
+                        self.registers.d = self.rlc(self.registers.d);
+                    }
+                    ArithmeticTarget::E => {
+                        self.registers.e = self.rlc(self.registers.e);
+                    }
+                    ArithmeticTarget::H => {
+                        self.registers.h = self.rlc(self.registers.h);
+                    }
+                    ArithmeticTarget::L => {
+                        self.registers.l = self.rlc(self.registers.l);
+                    }
+                    _ => panic!("Invalid target"),
+                }
+            }
+            Instruction::SRA(target) => {
+                match target {
+                    ArithmeticTarget::A => {
+                        self.registers.a = self.sra(self.registers.a);
+                    }
+                    ArithmeticTarget::B => {
+                        self.registers.b = self.sra(self.registers.b);
+                    }
+                    ArithmeticTarget::C => {
+                        self.registers.c = self.sra(self.registers.c);
+                    }
+                    ArithmeticTarget::D => {
+                        self.registers.d = self.sra(self.registers.d);
+                    }
+                    ArithmeticTarget::E => {
+                        self.registers.e = self.sra(self.registers.e);
+                    }
+                    ArithmeticTarget::H => {
+                        self.registers.h = self.sra(self.registers.h);
+                    }
+                    ArithmeticTarget::L => {
+                        self.registers.l = self.sra(self.registers.l);
+                    }
+                    _ => panic!("Invalid target"),
+                }
+            }
+            Instruction::SLA(target) => {
+                match target {
+                    ArithmeticTarget::A => {
+                        self.registers.a = self.sla(self.registers.a);
+                    }
+                    ArithmeticTarget::B => {
+                        self.registers.b = self.sla(self.registers.b);
+                    }
+                    ArithmeticTarget::C => {
+                        self.registers.c = self.sla(self.registers.c);
+                    }
+                    ArithmeticTarget::D => {
+                        self.registers.d = self.sla(self.registers.d);
+                    }
+                    ArithmeticTarget::E => {
+                        self.registers.e = self.sla(self.registers.e);
+                    }
+                    ArithmeticTarget::H => {
+                        self.registers.h = self.sla(self.registers.h);
+                    }
+                    ArithmeticTarget::L => {
+                        self.registers.l = self.sla(self.registers.l);
+                    }
+                    _ => panic!("Invalid target"),
+                }
+            }
+            Instruction::SWAP(target) => {
+                match target {
+                    ArithmeticTarget::A => {
+                        self.registers.a = self.swap(self.registers.a);
+                    }
+                    ArithmeticTarget::B => {
+                        self.registers.b = self.swap(self.registers.b);
+                    }
+                    ArithmeticTarget::C => {
+                        self.registers.c = self.swap(self.registers.c);
+                    }
+                    ArithmeticTarget::D => {
+                        self.registers.d = self.swap(self.registers.d);
+                    }
+                    ArithmeticTarget::E => {
+                        self.registers.e = self.swap(self.registers.e);
+                    }
+                    ArithmeticTarget::H => {
+                        self.registers.h = self.swap(self.registers.h);
+                    }
+                    ArithmeticTarget::L => {
+                        self.registers.l = self.swap(self.registers.l);
+                    }
+                    _ => panic!("Invalid target"),
+                }
+            }
         }
     }
     
@@ -325,7 +802,7 @@ impl CPU {
         self.registers.f.carry = bit != 0;
         self.registers.f.h_carry = false;
     }
-    fn rrla(&mut self) {
+    fn rlca(&mut self) {
         let bit = self.registers.a & 0x80;
         self.registers.a = (self.registers.a << 1) | bit;
         self.registers.f.zero = false;
@@ -355,6 +832,71 @@ impl CPU {
         self.registers.f.sub = false;
         self.registers.f.h_carry = false;
         self.registers.f.carry = (value & 0x1) != 0;
+        new_value
+    }
+    fn rr(&mut self, value: u8) -> u8 {
+        let old_carry = self.registers.f.carry as u8;
+        let new_carry = value & 0x1;
+        let new_value = (value >> 1) | (old_carry << 7);
+        self.registers.f.zero = new_value == 0;
+        self.registers.f.sub = false;
+        self.registers.f.h_carry = false;
+        self.registers.f.carry = new_carry != 0;
+        new_value
+    }
+    fn rl(&mut self, value: u8) -> u8 {
+        let old_carry = self.registers.f.carry as u8;
+        let new_carry = value & 0x80;
+        let new_value = (value << 1) | old_carry;
+        self.registers.f.zero = new_value == 0;
+        self.registers.f.sub = false;
+        self.registers.f.h_carry = false;
+        self.registers.f.carry = new_carry != 0;
+        new_value
+    }
+    fn rrc(&mut self, value: u8) -> u8 {
+        let bit = value & 0x1;
+        let new_value = (value >> 1) | (bit << 7);
+        self.registers.f.zero = new_value == 0;
+        self.registers.f.sub = false;
+        self.registers.f.h_carry = false;
+        self.registers.f.carry = bit != 0;
+        new_value
+    }
+    fn rlc(&mut self, value: u8) -> u8 {
+        let bit = value & 0x80;
+        let new_value = (value << 1) | bit;
+        self.registers.f.zero = new_value == 0;
+        self.registers.f.sub = false;
+        self.registers.f.h_carry = false;
+        self.registers.f.carry = bit != 0;
+        new_value
+    }
+    fn sra(&mut self, value: u8) -> u8 {
+        let bit = value & 0x80;
+        let new_carry = value & 0x1;
+        let new_value = (value >> 1) | bit;
+        self.registers.f.zero = new_value == 0;
+        self.registers.f.sub = false;
+        self.registers.f.h_carry = false;
+        self.registers.f.carry = new_carry != 0;
+        new_value
+    }
+    fn sla(&mut self, value: u8) -> u8 {
+        let new_carry = value & 0x80;
+        let new_value = value << 1;
+        self.registers.f.zero = new_value == 0;
+        self.registers.f.sub = false;
+        self.registers.f.h_carry = false;
+        self.registers.f.carry = new_carry != 0;
+        new_value
+    }
+    fn swap(&mut self, value: u8) -> u8 {
+        let new_value = (value & 0x0F) << 4 | (value & 0xF0) >> 4;
+        self.registers.f.zero = new_value == 0;
+        self.registers.f.sub = false;
+        self.registers.f.h_carry = false;
+        self.registers.f.carry = false;
         new_value
     }
 }
