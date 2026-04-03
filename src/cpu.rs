@@ -383,7 +383,7 @@ impl CPU {
                 self.rla();
             }
             Instruction::RRCA => {
-                self.rlca();
+                self.rrca();
             }
             Instruction::RLCA => {
                 self.rlca();
@@ -803,7 +803,7 @@ impl CPU {
         self.registers.f.h_carry = false;
     }
     fn rlca(&mut self) {
-        let bit = self.registers.a & 0x80;
+        let bit = (self.registers.a & 0x80) >> 7;
         self.registers.a = (self.registers.a << 1) | bit;
         self.registers.f.zero = false;
         self.registers.f.sub = false;
