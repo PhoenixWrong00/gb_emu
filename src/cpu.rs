@@ -1,6 +1,6 @@
-use crate::inst::{Instruction, ArithmeticTarget};
+use crate::inst::*;
 use crate::registers::{Registers};
-
+use crate::membus::{MemoryBus};
 
 pub struct CPU {
     registers: Registers,
@@ -10,8 +10,84 @@ pub struct CPU {
 }
 
 impl CPU {
+    fn read_next_byte(&mut self) -> u8 {
+        let byte = self.bus.read_byte(self.pc);
+        self.pc = self.pc.wrapping_add(1);
+        byte
+    }
+
+    pub fn step(&mut self) {
+        let instruction_byte = self.bus.read_byte(self.pc);
+        self.pc = self.pc.wrapping_add(1);
+        let prefixed = instruction_byte == 0xCB;
+        let real_instruction = if prefixed {
+            let next = self.bus.read_byte(self.pc);
+            self.pc = self.pc.wrapping_add(1);
+            next
+        } else {
+            instruction_byte
+        };
+
+        if let Some(instruction) = Instruction::from_byte(real_instruction, prefixed) {
+            self.execute(instruction);
+        } else {
+            panic!("Wgat...");
+        }
+    }
+
     pub fn execute(&mut self, instruction: Instruction) {
         match instruction {
+            Instruction::LD(load_type) => {
+                match load_type {
+                    LoadType::Byte(target, source) => {
+                        let source_value = match source {
+                            LoadByteSource::A => self.registers.a,
+                            LoadByteSource::B => self.registers.b,
+                            LoadByteSource::C => self.registers.c,
+                            LoadByteSource::D => self.registers.d,
+                            LoadByteSource::E => self.registers.e,
+                            LoadByteSource::H => self.registers.h,
+                            LoadByteSource::L => self.registers.l,
+                            LoadByteSource::D8 => self.read_next_byte(),
+                            LoadByteSource::HLI => self.bus.read_byte(self.registers.get_hl()),
+                        };
+                        match target {
+                            LoadByteTarget::A => self.registers.a = source_value,
+                            LoadByteTarget::B => self.registers.b = source_value,
+                            LoadByteTarget::C => self.registers.c = source_value,
+                            LoadByteTarget::D => self.registers.d = source_value,
+                            LoadByteTarget::E => self.registers.e = source_value,
+                            LoadByteTarget::H => self.registers.h = source_value,
+                            LoadByteTarget::L => self.registers.l = source_value,
+                            LoadByteTarget::HLI => self.bus.write_byte(self.registers.get_hl(), source_value),
+                        };
+                    }
+                    LoadType::Word(target) => {
+                        let low = self.read_next_byte() as u16;
+                        let high = self.read_next_byte() as u16;
+                        let value = (high << 8) | low;
+                        match target {
+                            LoadWordTarget::BC => self.registers.set_bc(value),
+                            LoadWordTarget::DE => self.registers.set_de(value),
+                            LoadWordTarget::HL => self.registers.set_hl(value),
+                            LoadWordTarget::SP => self.sp = value
+                        }
+                    }
+                    _ => panic!("TODO: Implement other load types")
+                }
+            }
+
+            Instruction::JP(test) => {
+                let jump_condition = match test {
+                    JumpTest::NotZero => !self.registers.f.zero,
+                    JumpTest::NotCarry => !self.registers.f.carry,
+                    JumpTest::Zero => self.registers.f.zero,
+                    JumpTest::Carry => self.registers.f.carry,
+                    JumpTest::Always => true
+                };
+                self.jump(jump_condition)
+            }
+
             Instruction::ADD(target) => {
                 match target {
                     ArithmeticTarget::A => {
@@ -677,6 +753,16 @@ impl CPU {
                     _ => panic!("Invalid target"),
                 }
             }
+        }
+    }
+
+    fn jump(&mut self, should_jump: bool) {
+        if should_jump {
+            let least_significant = self.bus.read_byte(self.pc) as u16;
+            let most_significant = self.bus.read_byte(self.pc + 1) as u16;
+            self.pc = (most_significant << 8) | least_significant
+        } else {
+            self.pc = self.pc.wrapping_add(2)
         }
     }
     
