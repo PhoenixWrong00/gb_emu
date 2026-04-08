@@ -30,12 +30,18 @@ pub enum Instruction {
     SWAP(ArithmeticTarget),
     JP(JumpTest),
     LD(LoadType),
+    PUSH(ArithmeticTarget),
+    POP(ArithmeticTarget),
+    CALL(JumpTest),
+    RET(JumpTest),
+    NOP,
+    HALT
 }
 pub enum ArithmeticTarget {
     // 8-bit
     A, B, C, D, E, H, L,
     // 16-bit
-    BC, DE, HL, SP,
+    BC, DE, HL, SP, AF,
 }
 
 pub enum JumpTest {
@@ -57,7 +63,19 @@ pub enum LoadWordTarget {
 }
 pub enum LoadType{
     Byte(LoadByteTarget, LoadByteSource),
-    Word(LoadWordTarget)
+    Word(LoadWordTarget),
+    AFromIndirect(Indirect),
+    IndirectFromA(Indirect),
+    AFromByteAddress,
+    ByteAddressFromA,
+}
+
+pub enum Indirect {
+    BCIndirect,
+    DEIndirect,
+    HLIndirectPlus,
+    HLIndirectMinus,
+    WordIndirect,
 }
 
 impl Instruction {

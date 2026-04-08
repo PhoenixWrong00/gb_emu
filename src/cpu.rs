@@ -7,6 +7,7 @@ pub struct CPU {
     pc: u16,
     sp: u16,
     bus: MemoryBus,
+    pub is_halted: bool,
 }
 
 impl CPU {
@@ -15,8 +16,16 @@ impl CPU {
         self.pc = self.pc.wrapping_add(1);
         byte
     }
+    fn read_next_word(&mut self) -> u16 {
+        let word = self.bus.read_word(self.pc);
+        self.pc = self.pc.wrapping_add(1);
+        word
+    }
 
     pub fn step(&mut self) {
+        if self.is_halted {
+            return;
+        }
         let instruction_byte = self.bus.read_byte(self.pc);
         self.pc = self.pc.wrapping_add(1);
         let prefixed = instruction_byte == 0xCB;
@@ -37,6 +46,54 @@ impl CPU {
 
     pub fn execute(&mut self, instruction: Instruction) {
         match instruction {
+            Instruction::NOP => {}
+            Instruction::HALT => {
+                self.is_halted = true;
+            }
+            Instruction::CALL(test) => {
+                let jump_condition = match test {
+                    JumpTest::NotZero => !self.registers.f.zero,
+                    JumpTest::NotCarry => !self.registers.f.carry,
+                    JumpTest::Zero => self.registers.f.zero,
+                    JumpTest::Carry => self.registers.f.carry,
+                    JumpTest::Always => true
+                };
+                self.call(jump_condition);
+            }
+            Instruction::RET(test) => {
+                let jump_condition = match test {
+                    JumpTest::NotZero => !self.registers.f.zero,
+                    JumpTest::NotCarry => !self.registers.f.carry,
+                    JumpTest::Zero => self.registers.f.zero,
+                    JumpTest::Carry => self.registers.f.carry,
+                    JumpTest::Always => true
+                };
+                self.return_(jump_condition);
+            }
+
+
+            Instruction::PUSH(target) => {
+                let value = match target {
+                    ArithmeticTarget::BC => self.registers.get_bc(),
+                    ArithmeticTarget::DE => self.registers.get_de(),
+                    ArithmeticTarget::HL => self.registers.get_hl(),
+                    ArithmeticTarget::AF => self.registers.get_af(),
+                    _ => { panic!("Invalid target") }
+                };
+                self.push(value);
+            }
+
+            Instruction::POP(target) => {
+                let result = self.pop();
+                match target {
+                    ArithmeticTarget::BC => self.registers.set_bc(result),
+                    ArithmeticTarget::DE => self.registers.set_de(result),
+                    ArithmeticTarget::HL => self.registers.set_hl(result),
+                    ArithmeticTarget::AF => self.registers.set_af(result),
+                    _ => { panic!("Invalid target") }
+                };
+            }
+
             Instruction::LD(load_type) => {
                 match load_type {
                     LoadType::Byte(target, source) => {
@@ -49,7 +106,11 @@ impl CPU {
                             LoadByteSource::H => self.registers.h,
                             LoadByteSource::L => self.registers.l,
                             LoadByteSource::D8 => self.read_next_byte(),
-                            LoadByteSource::HLI => self.bus.read_byte(self.registers.get_hl()),
+                            LoadByteSource::HLI => {
+                                let val = self.bus.read_byte(self.registers.get_hl());
+                                self.registers.set_hl(self.registers.get_hl().wrapping_add(1));
+                                val
+                            }
                         };
                         match target {
                             LoadByteTarget::A => self.registers.a = source_value,
@@ -59,7 +120,10 @@ impl CPU {
                             LoadByteTarget::E => self.registers.e = source_value,
                             LoadByteTarget::H => self.registers.h = source_value,
                             LoadByteTarget::L => self.registers.l = source_value,
-                            LoadByteTarget::HLI => self.bus.write_byte(self.registers.get_hl(), source_value),
+                            LoadByteTarget::HLI => {
+                                self.bus.write_byte(self.registers.get_hl(), source_value);
+                                self.registers.set_hl(self.registers.get_hl().wrapping_add(1));
+                            }
                         };
                     }
                     LoadType::Word(target) => {
@@ -73,7 +137,58 @@ impl CPU {
                             LoadWordTarget::SP => self.sp = value
                         }
                     }
-                    _ => panic!("TODO: Implement other load types")
+                    LoadType::AFromIndirect(indirect) => {
+                        let addr = match indirect {
+                            Indirect::BCIndirect => self.registers.get_bc(),
+                            Indirect::DEIndirect => self.registers.get_de(),
+                            Indirect::HLIndirectPlus => {
+                                let addr = self.registers.get_hl();
+                                self.registers.set_hl(addr.wrapping_add(1));
+                                addr
+                            }
+                            Indirect::HLIndirectMinus => {
+                                let addr = self.registers.get_hl();
+                                self.registers.set_hl(addr.wrapping_sub(1));
+                                addr
+                            }
+                            Indirect::WordIndirect => {
+                                let low = self.read_next_byte() as u16;
+                                let high = self.read_next_byte() as u16;
+                                (high << 8) | low
+                            }
+                        };
+                        self.registers.a = self.bus.read_byte(addr);
+                    }
+                    LoadType::IndirectFromA(indirect) => {
+                        let addr = match indirect {
+                            Indirect::BCIndirect => self.registers.get_bc(),
+                            Indirect::DEIndirect => self.registers.get_de(),
+                            Indirect::HLIndirectPlus => {
+                                let addr = self.registers.get_hl();
+                                self.registers.set_hl(addr.wrapping_add(1));
+                                addr
+                            }
+                            Indirect::HLIndirectMinus => {
+                                let addr = self.registers.get_hl();
+                                self.registers.set_hl(addr.wrapping_sub(1));
+                                addr
+                            }
+                            Indirect::WordIndirect => {
+                                let low = self.read_next_byte() as u16;
+                                let high = self.read_next_byte() as u16;
+                                (high << 8) | low
+                            }
+                        };
+                        self.bus.write_byte(addr, self.registers.a);
+                    }
+                    LoadType::AFromByteAddress => {
+                        let offset = self.read_next_byte() as u16;
+                        self.registers.a = self.bus.read_byte(0xFF00 | offset);
+                    }
+                    LoadType::ByteAddressFromA => {
+                        let offset = self.read_next_byte() as u16;
+                        self.bus.write_byte(0xFF00 | offset, self.registers.a);
+                    }
                 }
             }
 
@@ -757,12 +872,9 @@ impl CPU {
     }
 
     fn jump(&mut self, should_jump: bool) {
+        let dest = self.read_next_word();
         if should_jump {
-            let least_significant = self.bus.read_byte(self.pc) as u16;
-            let most_significant = self.bus.read_byte(self.pc + 1) as u16;
-            self.pc = (most_significant << 8) | least_significant
-        } else {
-            self.pc = self.pc.wrapping_add(2)
+            self.pc = dest;
         }
     }
     
@@ -778,7 +890,7 @@ impl CPU {
         let (new_value, did_overflow) = self.registers.get_hl().overflowing_add(value);
         self.registers.f.sub = false;
         self.registers.f.carry = did_overflow;
-        self.registers.f.h_carry = (self.registers.get_hl() & 0xF) + (value & 0xF) > 0xF;
+        self.registers.f.h_carry = (self.registers.get_hl() & 0xFFF) + (value & 0xFFF) > 0xFFF;
         new_value
     }
     fn adc(&mut self, value:u8) -> u8 {
@@ -806,7 +918,7 @@ impl CPU {
         self.registers.f.zero = v2 == 0;
         self.registers.f.sub = true;
         self.registers.f.carry = o1 || o2;
-        self.registers.f.h_carry = (self.registers.a & 0xF) < (value & 0xF);
+        self.registers.f.h_carry = (self.registers.a & 0xF) < (value & 0xF) + carry;
         v2
     }
     fn and(&mut self, value: u8) -> u8 {
@@ -950,7 +1062,7 @@ impl CPU {
         new_value
     }
     fn rlc(&mut self, value: u8) -> u8 {
-        let bit = value & 0x80;
+        let bit = (value & 0x80) >> 7;
         let new_value = (value << 1) | bit;
         self.registers.f.zero = new_value == 0;
         self.registers.f.sub = false;
@@ -984,5 +1096,30 @@ impl CPU {
         self.registers.f.h_carry = false;
         self.registers.f.carry = false;
         new_value
+    }
+    fn push(&mut self, value: u16) {
+        self.sp = self.sp.wrapping_sub(1);
+        self.bus.write_byte(self.sp, ((value & 0xFF00) >> 8) as u8);
+        self.sp = self.sp.wrapping_sub(1);
+        self.bus.write_byte(self.sp, (value & 0xFF) as u8);
+    }
+    fn pop(&mut self) -> u16 {
+        let lsb = self.bus.read_byte(self.sp) as u16;
+        self.sp = self.sp.wrapping_add(1);
+        let msb = self.bus.read_byte(self.sp) as u16;
+        self.sp = self.sp.wrapping_add(1);
+        (msb << 8) | lsb
+    }
+    fn call(&mut self, should_jump: bool) {
+        let dest = self.read_next_word();
+        if should_jump {
+            self.push(self.pc);
+            self.pc = dest;
+        }
+    }
+    fn return_(&mut self, should_jump: bool) {
+        if should_jump {
+            self.pc = self.pop()
+        }
     }
 }
